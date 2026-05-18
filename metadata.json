@@ -1,0 +1,11 @@
+{
+  "name": "Remix: Remix: عراق رنتل - لإدارة شركات التأجير",
+  "description": "نظام متكامل لإدارة شركات التأجير في الشرق الأوسط، يتضمن إدارة العقود الإلكترونية وقائمة الحظر الموحدة.",
+  "requestFramePermissions": [
+    "camera",
+    "geolocation"
+  ],
+  "majorCapabilities": [
+    "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
+  ]
+}
