@@ -1,0 +1,1 @@
+                            <div key={contract.id || i} className="bg-slate-800/40 p-3 rounded-2xl border border-slate-700/50 flex flex-col text-right hover:bg-slate-800/60 transition cursor-pointer" onClick={() => setCurrentTab('contracts-list')}>

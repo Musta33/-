@@ -3,60 +3,197 @@
  * Local API Service as a replacement for Firebase
  */
 
-const getAuthToken = () => localStorage.getItem('auth_token');
+// Global event bus for real-time local updates
+const dataListeners: { id: number; path: string; trigger: (immediate?: boolean) => void }[] = [];
+let listenerId = 0;
+
+const triggerUpdate = (path: string) => {
+  const base = path.split('/')[0];
+  dataListeners.forEach(listener => {
+    if (listener.path === path || listener.path === base || listener.path.startsWith(base)) {
+      listener.trigger(true);
+    }
+  });
+};
+
+const getAuthToken = () => {
+  const token = localStorage.getItem('auth_token');
+  return token ? token.replace(/^"|"$/g, '') : null;
+};
 
 export const api = {
-  get: async (path: string, params?: any) => {
-    const searchParams = params ? '?' + new URLSearchParams(params).toString() : '';
-    const response = await fetch(`/api/data/${path}${searchParams}`, {
-      headers: {
-        'Authorization': `Bearer ${getAuthToken()}`
+  get: async (path: string, params?: any, retries = 5) => {
+    const searchParams = (params && Object.keys(params).length > 0) ? '?' + new URLSearchParams(params).toString() : '';
+    const url = `/api/data/${path}${searchParams}`;
+    let response;
+    try {
+      response = await fetch(url, {
+        headers: {
+          'Authorization': `Bearer ${getAuthToken()}`
+        }
+      });
+    } catch (err) {
+      if (retries > 0) {
+        console.warn(`Retrying GET ${url}... (${retries} retries left)`);
+        await new Promise(resolve => setTimeout(resolve, 2000));
+        return api.get(path, params, retries - 1);
       }
-    });
-    if (!response.ok) throw new Error(await response.text());
-    return response.json();
+      console.warn(`API GET Network Warning for ${url}:`, err);
+      // If it's a "Failed to fetch", it might be a temporary network issue or server restart
+      throw new Error(`تعذر الاتصال بالخادم (${url}). يرجى التحقق من اتصالك بالإنترنت أو المحاولة لاحقاً.`);
+    }
+
+    if (response.status === 429 && retries > 0) {
+      await new Promise(resolve => setTimeout(resolve, 2000 + Math.random() * 2000));
+      return api.get(path, params, retries - 1);
+    }
+
+    if (response.status === 401 || response.status === 403) {
+      localStorage.removeItem('auth_token');
+      localStorage.removeItem('auth_user');
+      window.location.href = '/';
+      throw new Error('تم انتهاء صلاحية الجلسة. يرجى تسجيل الدخول مجدداً.');
+    }
+    
+    if (response.status === 404) return null;
+    if (!response.ok) {
+      const text = await response.text().catch(() => 'Unknown Error');
+      throw new Error(text);
+    }
+    
+    const text = await response.text();
+    try {
+      return JSON.parse(text);
+    } catch (e) {
+      console.error(`Failed to parse JSON from ${url}. Body starts with: ${text.substring(0, 100)}`);
+      throw new SyntaxError(`استجابة غير صالحة من الخادم (JSON parsing failed for ${url})`);
+    }
   },
-  getOne: async (path: string, id: string) => {
-    const response = await fetch(`/api/data/${path}/${id}`, {
-      headers: {
-        'Authorization': `Bearer ${getAuthToken()}`
+  getOne: async (path: string, id: string, retries = 3) => {
+    const url = `/api/data/${path}/${id}`;
+    let response;
+    try {
+      response = await fetch(url, {
+        headers: {
+          'Authorization': `Bearer ${getAuthToken()}`
+        }
+      });
+    } catch (err) {
+      if (retries > 0) {
+        await new Promise(resolve => setTimeout(resolve, 2000 + Math.random() * 2000));
+        return api.getOne(path, id, retries - 1);
       }
-    });
-    if (!response.ok) throw new Error(await response.text());
-    return response.json();
+      console.warn(`API GET_ONE Network Warning for ${url}:`, err);
+      throw new Error(`تعذر الاتصال بالخادم (${url}). يرجى التحقق من اتصالك بالإنترنت.`);
+    }
+
+    if (response.status === 429 && retries > 0) {
+        await new Promise(resolve => setTimeout(resolve, 2000 + Math.random() * 2000));
+        return api.getOne(path, id, retries - 1);
+    }
+
+    if (response.status === 401 || response.status === 403) {
+      localStorage.removeItem('auth_token');
+      localStorage.removeItem('auth_user');
+      window.location.href = '/';
+      throw new Error('تم انتهاء صلاحية الجلسة. يرجى تسجيل الدخول مجدداً.');
+    }
+    
+    if (!response.ok) {
+      const text = await response.text().catch(() => 'Unknown Error');
+      throw new Error(text);
+    }
+    
+    const text = await response.text();
+    try {
+      return JSON.parse(text);
+    } catch (e) {
+      console.error(`Failed to parse JSON from ${url}. Body starts with: ${text.substring(0, 100)}`);
+      throw new SyntaxError(`استجابة غير صالحة من الخادم (JSON parsing failed for ${url})`);
+    }
   },
   post: async (path: string, data: any) => {
-    const response = await fetch(`/api/data/${path}`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${getAuthToken()}`
-      },
-      body: JSON.stringify(data)
-    });
+    let response;
+    try {
+      response = await fetch(`/api/data/${path}`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${getAuthToken()}`
+        },
+        body: JSON.stringify(data)
+      });
+    } catch (err) {
+      console.warn('API POST Error:', err);
+      throw new Error(`فشل الاتصال بالخادم: ${err instanceof Error ? err.message : String(err)}`);
+    }
+
+    if (response.status === 401 || response.status === 403) {
+      localStorage.removeItem('auth_token');
+      localStorage.removeItem('auth_user');
+      window.location.href = '/';
+      throw new Error('تم انتهاء صلاحية الجلسة. يرجى تسجيل الدخول مجدداً.');
+    }
     if (!response.ok) throw new Error(await response.text());
+    triggerUpdate(path);
     return response.json();
   },
   put: async (path: string, id: string, data: any) => {
-    const response = await fetch(`/api/data/${path}/${id}`, {
-      method: 'PUT',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${getAuthToken()}`
-      },
-      body: JSON.stringify(data)
-    });
+    let response;
+    try {
+      response = await fetch(`/api/data/${path}/${id}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${getAuthToken()}`
+        },
+        body: JSON.stringify(data)
+      });
+    } catch (err) {
+      console.warn('API PUT Error:', err);
+      throw new Error(`فشل الاتصال بالخادم: ${err instanceof Error ? err.message : String(err)}`);
+    }
+
+    if (response.status === 401 || response.status === 403) {
+      localStorage.removeItem('auth_token');
+      localStorage.removeItem('auth_user');
+      window.location.href = '/';
+      throw new Error('تم انتهاء صلاحية الجلسة. يرجى تسجيل الدخول مجدداً.');
+    }
     if (!response.ok) throw new Error(await response.text());
+    triggerUpdate(path);
     return response.json();
   },
   delete: async (path: string, id: string) => {
-    const response = await fetch(`/api/data/${path}/${id}`, {
-      method: 'DELETE',
-      headers: {
-        'Authorization': `Bearer ${getAuthToken()}`
-      }
-    });
+    let response;
+    try {
+      response = await fetch(`/api/data/${path}/${id}`, {
+        method: 'DELETE',
+        headers: {
+          'Authorization': `Bearer ${getAuthToken()}`
+        }
+      });
+    } catch (err) {
+      console.warn('API DELETE Error:', err);
+      throw new Error(`فشل الاتصال بالخادم: ${err instanceof Error ? err.message : String(err)}`);
+    }
+
+    if (response.status === 401 || response.status === 403) {
+      localStorage.removeItem('auth_token');
+      localStorage.removeItem('auth_user');
+      window.location.href = '/';
+      throw new Error('تم انتهاء صلاحية الجلسة. يرجى تسجيل الدخول مجدداً.');
+    }
     if (!response.ok) throw new Error(await response.text());
+    
+    // Check if body is empty (204 No Content)
+    if (response.status === 204) {
+      triggerUpdate(path);
+      return null;
+    }
+    
+    console.log('API Delete: successful status, parsing response');
+    triggerUpdate(path);
     return response.json();
   },
   // Specific for auth
@@ -65,10 +202,35 @@ export const api = {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(credentials)
+    }).catch(err => {
+      console.warn('API Login Network Error:', err);
+      throw new Error(`فشل الاتصال بالخادم: ${err instanceof Error ? err.message : String(err)}`);
     });
     if (!response.ok) {
-        const err = await response.json();
-        throw new Error(err.message || 'فشل تسجيل الدخول');
+        const text = await response.text().catch(() => '');
+        let errorMessage = `خطأ في تسجيل الدخول (${response.status})`;
+        let lockUntil = null;
+        try {
+          if (text && text.trim().startsWith('{')) {
+            const errData = JSON.parse(text);
+            errorMessage = errData.message || errorMessage;
+            lockUntil = errData.lockUntil || null;
+          } else if (text && text.length < 150 && !text.includes('<html>')) {
+            errorMessage = text;
+          } else if (response.status === 401) {
+            errorMessage = 'خطأ في البريد الإلكتروني أو كلمة المرور';
+          } else if (response.status === 403) {
+            errorMessage = 'الحساب محظور أو غير مصرح له';
+          } else if (response.status === 429) {
+            errorMessage = 'محاولات كثيرة جداً. يرجى الانتظار.';
+          }
+        } catch (e) {
+          // Fallback
+        }
+        const error: any = new Error(errorMessage);
+        error.lockUntil = lockUntil;
+        error.status = response.status;
+        throw error;
     }
     return response.json();
   },
@@ -77,11 +239,38 @@ export const api = {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(data)
+    }).catch(err => {
+      console.warn('API Register Network Error:', err);
+      throw new Error(`فشل الاتصال بالخادم: ${err instanceof Error ? err.message : String(err)}`);
     });
     if (!response.ok) {
-        const err = await response.json();
+        const err = await response.json().catch(() => ({ message: 'فشل إنشاء الحساب' }));
         throw new Error(err.message || 'فشل إنشاء الحساب');
     }
+    return response.json();
+  },
+  unblockCompany: async (companyId: string) => {
+    const response = await fetch('/api/admin/unblock-company', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${getAuthToken()}`
+        },
+        body: JSON.stringify({ companyId })
+    });
+    if (!response.ok) throw new Error('فشل فك الحظر المؤقت');
+    return response.json();
+  },
+  toggleBanCompany: async (companyId: string) => {
+    const response = await fetch('/api/admin/toggle-ban-company', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${getAuthToken()}`
+        },
+        body: JSON.stringify({ companyId })
+    });
+    if (!response.ok) throw new Error('فشل تغيير حالة الحظر النهائي');
     return response.json();
   }
 };
@@ -128,7 +317,7 @@ export const getDocs = async (q: any) => {
         const data = await api.get(path, params);
         return {
             docs: data.map((item: any) => ({
-                id: item.id,
+                id: item.id || item._id,
                 data: () => item,
                 exists: () => true
             })),
@@ -143,8 +332,9 @@ export const getDoc = async (d: any) => {
     const { coll, id } = d;
     try {
         const item = await api.getOne(coll, id);
+        if (!item) return { id, data: () => null, exists: () => false };
         return {
-            id: item.id,
+            id: item.id || item._id,
             data: () => item,
             exists: () => true
         };
@@ -194,24 +384,33 @@ export const onSnapshot = (q: any, callback: (snap: any) => void, errorCallback?
     // In a real app we'd use WebSockets or SSE
     const path = typeof q === 'string' ? q : (q.coll || (q.id ? `${q.coll}/${q.id}` : q.coll));
     
-    const fetchData = async () => {
+    const fetchData = async (immediate = false) => {
+        if (!immediate) {
+            // Add random jitter between 0 and 2 seconds to stagger initial bursts
+            await new Promise(resolve => setTimeout(resolve, Math.random() * 2000));
+        }
         try {
             if (q.id) {
                 const item = await api.getOne(q.coll, q.id);
-                callback({
-                    id: item.id,
-                    data: () => item,
-                    exists: () => true
-                });
+                if (!item) {
+                    callback({ id: q.id, data: () => null, exists: () => false });
+                } else {
+                    callback({
+                        id: item.id || item._id,
+                        data: () => item,
+                        exists: () => true
+                    });
+                }
             } else {
                 const data = await api.get(path, q.params);
                 callback({
                     docs: data.map((item: any) => ({
-                        id: item.id,
+                        id: item.id || item._id,
                         data: () => item,
                         exists: () => true
                     })),
-                    empty: data.length === 0
+                    empty: data.length === 0,
+                    size: data.length
                 });
             }
         } catch (e) {
@@ -220,8 +419,19 @@ export const onSnapshot = (q: any, callback: (snap: any) => void, errorCallback?
     };
 
     fetchData();
-    const interval = setInterval(fetchData, 5000); // Polling every 5 seconds
-    return () => clearInterval(interval);
+    
+    // Register listener for real-time local updates
+    const currentListenerId = ++listenerId;
+    dataListeners.push({ id: currentListenerId, path: path, trigger: fetchData });
+
+    // Use a longer polling interval to avoid Rate Exceeded errors
+    const interval = setInterval(fetchData, 60000); // Polling every 60 seconds
+    return () => {
+      clearInterval(interval);
+      // Remove listener
+      const idx = dataListeners.findIndex(l => l.id === currentListenerId);
+      if (idx !== -1) dataListeners.splice(idx, 1);
+    };
 };
 
 export const signOut = async (auth: any) => {

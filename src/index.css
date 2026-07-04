@@ -1,24 +1,80 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Tajawal:wght@400;500;700;800;900&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Tajawal:wght@400;500;700;800;900&family=Vazirmatn:wght@100;200;300;400;500;600;700;800;900&family=Noto+Sans+Arabic:wght@100;200;300;400;500;600;700;800;900&display=swap');
 @import "tailwindcss";
 @import "leaflet/dist/leaflet.css";
 
 @theme {
-  --font-sans: "Tajawal", "Inter", ui-sans-serif, system-ui, sans-serif;
-  --color-neutral-50: #f9fafb;
-  --color-neutral-100: #f3f4f6;
-  --color-neutral-200: #e5e7eb;
-  --color-neutral-300: #d1d5db;
-  --color-neutral-400: #9ca3af;
-  --color-neutral-500: #6b7280;
-  --color-neutral-600: #4b5563;
-  --color-neutral-700: #374151;
-  --color-neutral-800: #1f2937;
-  --color-neutral-900: #111827;
-}
+  --font-sans: "Vazirmatn", "Noto Sans Arabic", "Tajawal", "Inter", ui-sans-serif, system-ui, sans-serif;
+  
+  --color-neutral-50: #fafafa;
+  --color-neutral-100: #f5f5f5;
+  --color-neutral-200: #e5e5e5;
+  --color-neutral-300: #d4d4d4;
+  --color-neutral-400: #a3a3a3;
+  --color-neutral-500: #737373;
+  --color-neutral-600: #525252;
+  --color-neutral-700: #404040;
+  --color-neutral-800: #262626;
+  --color-neutral-900: #171717;
 
-@page {
-  size: A4;
-  margin: 10mm;
+  --color-gray-50: #f9fafb;
+  --color-gray-100: #f3f4f6;
+  --color-gray-200: #e5e7eb;
+  --color-gray-300: #d1d5db;
+  --color-gray-400: #9ca3af;
+  --color-gray-500: #6b7280;
+  --color-gray-600: #4b5563;
+  --color-gray-700: #374151;
+  --color-gray-800: #1f2937;
+  --color-gray-900: #111827;
+  --color-gray-950: #030712;
+
+  --color-blue-50: #eff6ff;
+  --color-blue-100: #dbeafe;
+  --color-blue-200: #bfdbfe;
+  --color-blue-300: #93c5fd;
+  --color-blue-400: #60a5fa;
+  --color-blue-500: #3b82f6;
+  --color-blue-600: #2563eb;
+  --color-blue-700: #1d4ed8;
+  --color-blue-800: #1e40af;
+  --color-blue-900: #1e3a8a;
+
+  --color-teal-50: #f0fdfa;
+  --color-teal-100: #ccfbf1;
+  --color-teal-200: #99f6e4;
+  --color-teal-300: #5eead4;
+  --color-teal-400: #2dd4bf;
+  --color-teal-500: #14b8a6;
+  --color-teal-600: #0d9488;
+  --color-teal-700: #0f766e;
+  --color-teal-800: #115e59;
+  --color-teal-900: #134e4a;
+
+  --color-amber-50: #fffbeb;
+  --color-amber-100: #fef3c7;
+  --color-amber-200: #fde68a;
+  --color-amber-300: #fcd34d;
+  --color-amber-400: #fbbf24;
+  --color-amber-500: #f59e0b;
+  --color-amber-600: #d97706;
+  --color-amber-700: #b45309;
+  --color-amber-800: #92400e;
+  --color-amber-900: #78350f;
+
+  --color-red-50: #fef2f2;
+  --color-red-100: #fee2e2;
+  --color-red-200: #fecaca;
+  --color-red-300: #fca5a5;
+  --color-red-400: #f87171;
+  --color-red-500: #ef4444;
+  --color-red-600: #dc2626;
+  --color-red-700: #b91c1c;
+
+  --color-emerald-500: #10b981;
+  --color-emerald-600: #059669;
+
+  --color-green-500: #22c55e;
+  --color-green-600: #16a34a;
 }
 
 @layer base {
@@ -27,14 +83,58 @@
     @apply antialiased;
   }
   body {
-    @apply bg-neutral-50 text-neutral-900 transition-colors duration-300;
+    @apply bg-white text-neutral-900 transition-colors duration-300;
     min-height: 100vh;
   }
   
   html.dark body {
-    background: linear-gradient(135deg, #0f172a, #1e293b);
+    background: rgb(232, 237, 242);
     @apply text-white;
   }
+}
+
+.lang-ku {
+  line-height: 1.75 !important;
+  font-feature-settings: "ss01", "ss02", "cv01";
+}
+
+.lang-ku * {
+  letter-spacing: 0 !important;
+}
+
+/* Specifically target labels and small text in Kurdish to be more legible */
+.lang-ku .text-xs, .lang-ku .text-\[10px\], .lang-ku .text-\[9px\] {
+  font-size: calc(1em + 1px) !important;
+  line-height: 1.6 !important;
+}
+
+.lang-ku .font-black {
+  font-weight: 800 !important; /* Slightly less than 900 to avoid clumpiness in Kurdish characters */
+}
+
+/* Custom argyle grid pattern match for Iraq Rental Dashboard matching user screenshot */
+.bg-argyle-pattern {
+  background-color: #000000;
+  background-image: 
+    linear-gradient(135deg, rgba(148, 163, 184, 0.05) 25%, transparent 25%), 
+    linear-gradient(225deg, rgba(148, 163, 184, 0.05) 25%, transparent 25%), 
+    linear-gradient(45deg, rgba(148, 163, 184, 0.05) 25%, transparent 25%), 
+    linear-gradient(315deg, rgba(148, 163, 184, 0.05) 25%, transparent 25%);
+  background-position: 30px 0, 30px 0, 0 0, 0 0;
+  background-size: 60px 60px;
+  background-repeat: repeat;
+}
+
+.dark .bg-argyle-pattern {
+  background-color: #090d16;
+  background-image: 
+    linear-gradient(135deg, rgba(255, 255, 255, 0.015) 25%, transparent 25%), 
+    linear-gradient(225deg, rgba(255, 255, 255, 0.015) 25%, transparent 25%), 
+    linear-gradient(45deg, rgba(255, 255, 255, 0.015) 25%, transparent 25%), 
+    linear-gradient(315deg, rgba(255, 255, 255, 0.015) 25%, transparent 25%);
+  background-position: 30px 0, 30px 0, 0 0, 0 0;
+  background-size: 60px 60px;
+  background-repeat: repeat;
 }
 
 /* User's Contract Styles integrated */
@@ -104,7 +204,7 @@
   font-size: 11px;
   font-weight: 800;
   line-height: 1.2;
-  color: #000;
+  color: hsl(0, 93%, 57%);
 }
 
 .contract-tables {
@@ -250,48 +350,180 @@
   background: #475569;
 }
 
+/* Contract Details Boxes */
+.info-card.group > div:nth-of-type(1) {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 4px;
+}
+.info-card.group > div:nth-of-type(1) > p {
+  display: flex !important;
+  flex-direction: column;
+  border: 1px solid #6b7280;
+  border-radius: 4px;
+  background-color: #fff;
+  margin-top: 0 !important;
+  font-size: 9px;
+  overflow: hidden;
+}
+.info-card.group > div:nth-of-type(1) > p > strong {
+  background-color: #e5e7eb;
+  padding: 2px 2px;
+  border-bottom: 1px solid #6b7280;
+  text-align: center;
+  font-size: 9px;
+  color: #1f2937;
+  white-space: nowrap;
+}
+.info-card.group > div:nth-of-type(1) > p > span {
+  padding: 3px 2px;
+  text-align: center;
+  font-weight: 700;
+  font-size: 10px;
+  line-height: 1.3;
+  word-break: break-word;
+  white-space: normal;
+}
+
 /* Print specific styles for contract */
 @media print {
   @page {
     size: A4 portrait;
-    margin: 10mm;
+    margin: 0;
+  }
+
+  body, html {
+    margin: 0 !important;
+    padding: 0 !important;
+    height: auto !important;
+    background: white !important;
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
   }
   
-  body {
-    -webkit-print-color-adjust: exact;
-    print-color-adjust: exact;
+  #root, #initial-loader, .print-hidden {
+    display: none !important;
+  }
+
+  #print-duplicates-container {
+    display: block !important;
+    position: relative !important;
+    width: 210mm !important;
+    margin: 0 auto !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+  }
+
+  #print-duplicates-container * {
+    visibility: visible !important;
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+
+  .print-contract-copy {
+    display: block !important;
+    position: relative !important;
+    margin: 0 !important;
+    padding: 0 !important;
     background: white !important;
-  }
-
-  body, html, #root {
-    width: 100%;
-    height: auto !important;
-    min-height: 100%;
-    margin: 0;
-    padding: 0;
-    background: white !important;
-  }
-
-  /* Hide elements designated not to print */
-  .print\:hidden { 
-    display: none !important; 
-  }
-
-  /* Remove strict sizes to allow it to flow into standard printer dimensions */
-  #contract { 
-    width: 100% !important;
-    max-width: 100% !important;
-    height: auto !important;
-    min-height: 0 !important;
-    margin: 0 !important; 
+    width: 210mm !important;
+    min-height: 297mm !important;
     box-shadow: none !important;
-    position: static !important;
+    overflow: visible !important;
+    page-break-after: always !important;
+    break-after: page !important;
+    page-break-inside: avoid !important;
+    break-inside: avoid !important;
+  }
+
+  .print-contract-copy:last-child {
+    page-break-after: avoid !important;
+    break-after: avoid !important;
   }
 }
+
 
 /* Editable specific styles */
 .editable { outline: none; transition: all 0.2s; border-radius: 2px; }
 @media screen {
   .editable:hover { background-color: #f0f9ff; outline: 1px dashed #93c5fd; cursor: text; }
   .editable:focus { background-color: #e0f2fe; outline: 2px solid #3b82f6; }
+}
+
+/* Loading Screen Style - moved from index.html */
+#initial-loader {
+  position: fixed;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  background: #ffffff;
+  z-index: 9999;
+  transition: opacity 0.5s ease-out;
+}
+.spinner {
+  width: 40px;
+  height: 40px;
+  border: 4px solid #f3f3f3;
+  border-top: 4px solid #000;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+.loader-text {
+  margin-top: 16px;
+  font-family: "Tajawal", "Inter", sans-serif;
+  color: #000;
+  font-weight: 700;
+  font-size: 16px;
+  letter-spacing: -0.01em;
+}
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+.dark #initial-loader {
+  background: #090d16;
+}
+.dark .loader-text {
+  color: #fff;
+}
+.dark .spinner {
+  border: 4px solid #1f2937;
+  border-top: 4px solid #fff;
+}
+
+/* User requested to delete the following elements via Shift+Click / Focus tool */
+div#root:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(2) > main:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(3) > div:nth-of-type(1) > span:nth-of-type(2),
+div#root:nth-of-type(2) > div:nth-of-type(1) > div:nth-of-type(2) > main:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(2) > div:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(2) > div:nth-of-type(1) > div:nth-of-type(1) > button:nth-of-type(1),
+div#root > div:nth-of-type(1) > div:nth-of-type(2) > main:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(2) > div:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(2) > div:nth-of-type(1) > div:nth-of-type(1) > button:nth-of-type(1) {
+  display: none !important;
+}
+
+div#root:nth-of-type(2) > div:nth-of-type(1) > div:nth-of-type(3) > div:nth-of-type(1) {
+  background-color: #ffffff;
+}
+
+div#root:nth-of-type(2) > div:nth-of-type(1) > div:nth-of-type(2) > main:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(1) > h1:nth-of-type(1) {
+  font-style: normal;
+  font-weight: bold;
+  font-family: Georgia;
+  text-align: justify;
+}
+
+div#root:nth-of-type(2) > div:nth-of-type(1) > div:nth-of-type(2) > aside:nth-of-type(1) > div:nth-of-type(2) > button:nth-of-type(14) {
+  display: none !important;
+}
+
+div#root:nth-of-type(2) > div:nth-of-type(1) > div:nth-of-type(2) > main:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(1) > header:nth-of-type(1) > div:nth-of-type(1) > h1:nth-of-type(1) {
+  color: #000000;
+  text-align: right;
+  line-height: 36px;
+}
+
+div#root:nth-of-type(2) > div:nth-of-type(1) > div:nth-of-type(2) > main:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(2) > button:nth-of-type(1),
+div#root:nth-of-type(2) > div:nth-of-type(1) > div:nth-of-type(2) > main:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(2) > button:nth-of-type(2),
+div#root:nth-of-type(2) > div:nth-of-type(1) > div:nth-of-type(2) > main:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(2) > div:nth-of-type(4) > div#contract:nth-of-type(1) > div:nth-of-type(5) > div:nth-of-type(1) > div:nth-of-type(3) > div:nth-of-type(2) > div:nth-of-type(1) > div:nth-of-type(4) {
+  display: none !important;
 }

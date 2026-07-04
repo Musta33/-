@@ -1,0 +1,4 @@
+Server running on http://localhost:3000
+تم تشغيل بوت التليجرام بنجاح...
+🚀 تم الاتصال الفعلي بقاعدة بيانات MongoDB بنجاح!
+Successfully dropped legacy handle_1 index
