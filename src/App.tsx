@@ -26,6 +26,7 @@ import { Notifications } from './components/Notifications';
 import { ProfitChart } from './components/ProfitChart';
 import { ProfitsView } from './components/ProfitsView';
 import { InvestorCars } from './components/InvestorCars';
+import { BatchUploader } from './components/BatchUploader';
 import { translations } from './lib/locales';
 import { LanguageSwitcher } from './components/LanguageSwitcher';
 
@@ -156,6 +157,7 @@ export default function App() {
   const [branchCompanyId, setBranchCompanyId] = useState<string | null>(null);
   const [confirmDeleteCompanyId, setConfirmDeleteCompanyId] = useState<string | null>(null);
   const [targetContractId, setTargetContractId] = useState<string | null>(null);
+  const [showBatchUploader, setShowBatchUploader] = useState(false);
 
   // Auto-release logic for cars that might be stuck as 'rented' while having no active contract
   // This helps recover local state for older contracts and handle manual edge cases.
@@ -1991,6 +1993,14 @@ export default function App() {
                      </div>
 
                      <div className="flex items-center gap-3">
+                       <button 
+                         onClick={() => setShowBatchUploader(true)} 
+                         className="flex items-center gap-2 px-4 py-2.5 bg-indigo-600 hover:bg-indigo-500 text-white border border-indigo-400 rounded-xl transition-all font-black text-xs shadow-md shadow-indigo-200"
+                         title="رفع مئات الملفات دفعة واحدة"
+                       >
+                         <UploadCloud size={16} />
+                         <span>مركز رفع الملفات (+100 ملف)</span>
+                       </button>
                        <button 
                          onClick={() => setCurrentTab('contracts-cancelled')} 
                          className="flex items-center gap-2 px-4 py-2.5 bg-red-50 text-red-600 border border-red-100 rounded-xl hover:bg-red-100 transition-all font-black text-xs shadow-sm"
@@ -4632,6 +4642,9 @@ export default function App() {
           </motion.div>
         </div>
       )}
+
+      {/* Bulk Batch Files Uploader (+100 files) */}
+      <BatchUploader isOpen={showBatchUploader} onClose={() => setShowBatchUploader(false)} />
 
     </div>
   );

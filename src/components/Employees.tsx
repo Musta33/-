@@ -3,7 +3,7 @@ import { db, collection, addDoc, serverTimestamp, onSnapshot, query, where, orde
 import { toast } from 'react-hot-toast';
 import { Printer, Users, CheckCircle, Calculator, UserPlus } from 'lucide-react';
 
-export const Employees = ({ myCompany, staff }: { myCompany?: any, staff?: any }) => {
+export const Employees = ({ myCompany, staff }: { key?: string, myCompany?: any, staff?: any }) => {
     // Form state
     const [empName, setEmpName] = useState('');
     const [empRole, setEmpRole] = useState('');

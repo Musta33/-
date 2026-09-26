@@ -196,6 +196,52 @@ export const api = {
     triggerUpdate(path);
     return response.json();
   },
+  uploadBatch: async (files: File[], onProgress?: (processed: number, total: number) => void) => {
+    const CHUNK_SIZE = 50; // Process in chunks of 50 files for smooth network transmission
+    const total = files.length;
+    let processedCount = 0;
+    const allResults: any[] = [];
+
+    for (let i = 0; i < total; i += CHUNK_SIZE) {
+      const chunk = files.slice(i, i + CHUNK_SIZE);
+      const formData = new FormData();
+      chunk.forEach(f => formData.append('files', f));
+
+      try {
+        const response = await fetch('/api/upload-batch', {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${getAuthToken()}`
+          },
+          body: formData
+        });
+
+        if (response.status === 401 || response.status === 403) {
+          localStorage.removeItem('auth_token');
+          localStorage.removeItem('auth_user');
+          window.location.href = '/';
+          throw new Error('تم انتهاء صلاحية الجلسة. يرجى تسجيل الدخول مجدداً.');
+        }
+
+        if (!response.ok) {
+          const errText = await response.text();
+          throw new Error(errText || 'فشل رفع مجموعة الملفات');
+        }
+
+        const resData = await response.json();
+        if (resData.files) {
+          allResults.push(...resData.files);
+        }
+        processedCount += chunk.length;
+        if (onProgress) onProgress(processedCount, total);
+      } catch (err) {
+        console.error(`Batch upload chunk error (${i}-${i + CHUNK_SIZE}):`, err);
+        throw err;
+      }
+    }
+
+    return allResults;
+  },
   // Specific for auth
   login: async (credentials: any) => {
     const response = await fetch('/api/login', {

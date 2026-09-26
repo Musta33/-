@@ -1,6 +1,11 @@
 node_modules/
+dist/
 coverage/
 .DS_Store
 *.log
-.env*
+.env
+.env.local
+.env.production
+db.json
+users.json
 !.env.example

@@ -3,7 +3,7 @@ import { db, collection, addDoc, onSnapshot, query, where } from '../lib/api';
 import { toast } from 'react-hot-toast';
 import { Printer, TrendingUp, TrendingDown, DollarSign, Users, AlertTriangle } from 'lucide-react';
 
-export const FinancialSystem = ({ myCompany, staff }: { myCompany?: any, staff?: any }) => {
+export const FinancialSystem = ({ myCompany, staff }: { key?: string, myCompany?: any, staff?: any }) => {
     const [txType, setTxType] = useState('expense');
     const [amount, setAmount] = useState('');
     const [description, setDescription] = useState('');

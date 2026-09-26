@@ -3,7 +3,7 @@ import { db, collection, addDoc, serverTimestamp } from '../lib/api';
 import { toast } from 'react-hot-toast';
 import { Printer } from 'lucide-react';
 
-export const MaintenanceExpenses = ({ cars = [], records = [], setRecords = (val: any[]) => {}, staff, myCompany }: { key?: string, cars?: any[], records?: any[], setRecords?: (val: any[]) => void, staff?: any, myCompany?: any }) => {
+export const MaintenanceExpenses = ({ cars = [], records = [], setRecords = (val: any) => {}, staff, myCompany }: { key?: string, cars?: any[], records?: any[], setRecords?: any, staff?: any, myCompany?: any }) => {
     const [expenseType, setExpenseType] = useState('operational'); // 'operational', 'maintenance', 'car_maintenance', 'salary', 'hospitality'
     const [expenseTitle, setExpenseTitle] = useState('');
     const [expenseAmount, setExpenseAmount] = useState<string | number>('');
